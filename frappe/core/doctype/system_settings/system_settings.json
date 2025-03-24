@@ -546,6 +546,13 @@
    "label": "Disable Document Sharing"
   },
   {
+  "fieldname": "prepared_report_threshold",
+  "fieldtype": "Int",
+  "label": "Prepared Report Threshold (seconds)",
+  "default": 15,
+  "description": "Execution time threshold (in seconds) after which a report will be generated as a background job"
+  },
+  {
    "fieldname": "telemetry_section",
    "fieldtype": "Section Break",
    "label": "Telemetry"
