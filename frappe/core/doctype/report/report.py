@@ -154,34 +154,32 @@ class Report(Document):
 		return [columns, result]
 
 	def execute_script_report(self, filters):
-		# save the timestamp to automatically set to prepared
-		threshold = 15
-		res = []
-
-		start_time = datetime.datetime.now()
-		prepared_report_watcher = None
-		if not self.prepared_report:
-			prepared_report_watcher = threading.Timer(
-				interval=threshold,
-				function=enable_prepared_report,
-				kwargs={"report": self.name, "site": frappe.local.site},
-			)
-			prepared_report_watcher.start()
-
-		# The JOB
-		try:
-			if self.is_standard == "Yes":
-				res = self.execute_module(filters)
-			else:
-				res = self.execute_script(filters)
-		finally:
-			prepared_report_watcher and prepared_report_watcher.cancel()
-
-		execution_time = (datetime.datetime.now() - start_time).total_seconds()
-
-		frappe.cache.hset("report_execution_time", self.name, execution_time)
-
-		return res
+    # existing code...
+    import time, frappe
+    from frappe.utils import cint
+    
+    start_time = time.time()
+    
+    # Find this conditional check:
+    if self.prepared_report and (
+        self.report_name in frappe.get_hooks("background_prepared_reports")
+        or (hasattr(module, "scheduled_report") and module.scheduled_report)
+        or self.get_script().get("scheduled_report")
+        or (hasattr(module, "is_prepared_report") and module.is_prepared_report)
+        or (time.time() - start_time) > 15  # This is the hardcoded value
+    ):
+        # The existing background report generation logic...
+    
+    # Replace with:
+    prepared_threshold = frappe.db.get_single_value("System Settings", "prepared_report_threshold") or 15
+    if self.prepared_report and (
+        self.report_name in frappe.get_hooks("background_prepared_reports")
+        or (hasattr(module, "scheduled_report") and module.scheduled_report)
+        or self.get_script().get("scheduled_report")
+        or (hasattr(module, "is_prepared_report") and module.is_prepared_report)
+        or (time.time() - start_time) > prepared_threshold  # Now using the configurable value
+    ):
+        # The existing background report generation logic...
 
 	def execute_module(self, filters):
 		# report in python module
